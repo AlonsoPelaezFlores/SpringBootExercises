@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface AuthorRepository extends JpaRepository<AuthorEntity,Long> {
-    @Query("SELECT author.books FROM AuthorEntity author WHERE author.author_id = :id ")
+    @Query("SELECT author.books FROM AuthorEntity author WHERE author.id = :id ")
     List<BookEntity> listBooksByAuthorID(@Param("id") Long id);
 
 }

@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +16,7 @@ import java.util.List;
 public class AuthorEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long author_id;
+    private Long id;
     private String name;
     private String email;
 
@@ -27,11 +26,5 @@ public class AuthorEntity {
     private String dateOfBirth;
     private String nationality;
 
-    public AuthorEntity(String name, String email, List<BookEntity> books, String dateOfBirth, String nationality) {
-        this.name = name;
-        this.email = email;
-        this.books = books;
-        this.dateOfBirth = dateOfBirth;
-        this.nationality = nationality;
-    }
+
 }
