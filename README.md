@@ -6,4 +6,7 @@
 2) LibraryManagementSystem:
    Basic management system for a bookstore with books and authors using entity relationships to reference each author of a book and number 
    of books per author. Also using this time H2 as database and JpaRepository for the repository. Also the creation of an Api with basic 
-   crud functions. 
+   crud functions.
+3) AuthentificationSystem:
+   Basic authentication system with login, registration, session check and logout. The system has connection to the database with postgresql.
+   The creation of a user has a name, email and a password which will be stored encrypted in the database.
