@@ -13,9 +13,11 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -29,6 +31,7 @@ public class UserService {
     private final HttpSession httpSession;
 
 
+    //registro correcto pero mejorar errores para un mejor output
     public MessageResponse register(String username, String email, String password) {
 
         log.info("Intentando guardar usuario: " + username + " - " + email);
@@ -46,33 +49,45 @@ public class UserService {
     
         return new MessageResponse("User registered and logged in successfully");
     }
-    public MessageResponse login(String username, String password) {
+    //el login se hace correctamente cuando las credenciales son correctas de lo contrario
+    // no devuelve nada
+    public MessageResponse login(String email, String password) {
         try{
             Authentication auth = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password));
-            if(auth.isAuthenticated()){
-                User user = (User) auth.getPrincipal();
-                httpSession.setAttribute("user", user.getId());
+                    new UsernamePasswordAuthenticationToken(email, password));
+            log.info("Intentando autenticar usuario: " + auth.isAuthenticated());
+            if(auth.isAuthenticated() ) {
+                UserDetails userDetails = (UserDetails) auth.getPrincipal();
+                Optional<User> user = userRepository.findByEmail(userDetails.getUsername());
+                log.info("Usuario encontrado: " + user);
+                httpSession.setAttribute("user_id", user.get().getId());
                 return new MessageResponse("Login successful");
             }
+            return null;
         }catch (AuthenticationException e){
             throw new BadCredentialsException("❌ Invalid credentials");
         }
-        return null;
     }
+
+
+    //por resolver : pendientes
     public MessageResponse logout(){
         httpSession.invalidate();
         return new MessageResponse("Logged out successfully");
     }
+
+    //por resolver: pendientes
     public UserResponseDTO checkSession(){
-        User userLogged = (User) httpSession.getAttribute("user");
-        if ( userLogged == null) {
-            throw new BadCredentialsException("Invalid session");
-        }
-        User user = userRepository.findByUsername( userLogged.getUsername())
+        long user_id = (long) httpSession.getAttribute("user_id");
+        log.info("Intentando verificar usuario: " + user_id);
+        User userLogged = userRepository.findById(user_id)
                 .orElseThrow(()->new RuntimeException("User not found"));
-        UserDTO userDto = new UserDTO(user.getUsername());
+
+        UserDTO userDto = new UserDTO(userLogged.getUsername());
         return new UserResponseDTO(userDto);
     }
 
+    public List<User> getUsers(){
+        return userRepository.findAll();
+    }
 }

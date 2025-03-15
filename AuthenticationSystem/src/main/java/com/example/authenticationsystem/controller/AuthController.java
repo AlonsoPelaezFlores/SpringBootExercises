@@ -4,12 +4,15 @@ import com.example.authenticationsystem.dto.LoginRequest;
 import com.example.authenticationsystem.dto.RegisterRequest;
 import com.example.authenticationsystem.dto.UserResponseDTO;
 import com.example.authenticationsystem.model.MessageResponse;
+import com.example.authenticationsystem.model.User;
 import com.example.authenticationsystem.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -18,8 +21,9 @@ public class AuthController {
     @Autowired
     private UserService userService;
     @GetMapping
-    public ResponseEntity<MessageResponse> getMessageResponse() {
-        return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse("OK"));
+    public List<User> getMessageResponse() {
+        List<User> users= userService.getUsers();
+        return users;
     }
 
     @PostMapping("/register")
@@ -30,7 +34,8 @@ public class AuthController {
     }
     @PostMapping("/login")
     public ResponseEntity<MessageResponse> loginUser(@RequestBody LoginRequest request) {
-        MessageResponse messageResponse = userService.login(request.username(), request.password());
+        MessageResponse messageResponse = userService.login(request.email(), request.password());
+        log.info("message login controller: " + messageResponse.getMessage());
         if (messageResponse == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("❌ Invalid credentials"));
         }
