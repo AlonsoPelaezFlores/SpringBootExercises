@@ -1,5 +1,6 @@
-En este repositorio mostrare mi progreso de aprendizaje haciendo ejercicios con Spring boot.
+Ejercicios con Spring Boot
 ---
+En este repositorio mostrare mi progreso de aprendizaje con Spring boot.
 - *SpringBootWithPostgreSQL*: 
    Creacion de una api de empleados con operaciones basicas CRUD para probrar la conexion con la base de datos de postgresql.
 - *LibraryManagementSystem*:
