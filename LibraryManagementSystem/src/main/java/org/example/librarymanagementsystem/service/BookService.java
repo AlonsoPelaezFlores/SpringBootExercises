@@ -8,6 +8,8 @@ import org.example.librarymanagementsystem.repository.AuthorRepository;
 import org.example.librarymanagementsystem.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 @Slf4j
@@ -46,5 +48,12 @@ public class BookService {
         bookEntity.setAuthor(authorEntity);
         return bookRepository.save(bookEntity);
     }
-
+    public List<BookEntity> showAll(){
+        return bookRepository.findAll();
+    }
+    public void deleteBookByID(Long id){
+        BookEntity book = bookRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Book","id", id));
+        bookRepository.delete(book);
+    }
 }

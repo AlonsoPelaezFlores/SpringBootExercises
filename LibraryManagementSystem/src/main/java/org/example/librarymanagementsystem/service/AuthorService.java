@@ -1,5 +1,6 @@
 package org.example.librarymanagementsystem.service;
 
+import org.example.librarymanagementsystem.exception.custom.ResourceNotFoundException;
 import org.example.librarymanagementsystem.model.AuthorEntity;
 import org.example.librarymanagementsystem.model.BookEntity;
 import org.example.librarymanagementsystem.repository.AuthorRepository;
@@ -25,9 +26,9 @@ public class AuthorService {
         return authorRepository.save(newAuthorEntity);
     }
     public void deleteAuthorById(Long id){
-        if (authorRepository.existsById(id)){
-            authorRepository.deleteById(id);
-        }
+        AuthorEntity author = authorRepository.findById(id).
+                orElseThrow(()-> new ResourceNotFoundException("Author", "id", id));
+        authorRepository.delete(author);
     }
     public List<AuthorEntity> showAll(){
         return authorRepository.findAll();
