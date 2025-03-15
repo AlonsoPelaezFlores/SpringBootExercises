@@ -30,25 +30,32 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final HttpSession httpSession;
 
-
-    //registro correcto pero mejorar errores para un mejor output
-    public MessageResponse register(String username, String email, String password) {
-
-        log.info("Intentando guardar usuario: " + username + " - " + email);
-    
-        if (userRepository.findByUsername(username).isPresent()) {
-            throw new RuntimeException("Username already exists");
-        }
-    
+    public void register(String username, String email, String password) {
+        isUserValid(username, email);
         User user = User.builder()
                 .username(username)
                 .email(email)
                 .password(passwordEncoder.encode(password))
                 .build();
         userRepository.save(user);
-    
-        return new MessageResponse("User registered and logged in successfully");
     }
+    public void isUserValid(String username, String email) {
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+        if(userRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("Email already exists");
+        }
+        if(!isValidEmail(email)) {
+            throw new RuntimeException("Invalid email format");
+        }
+    }
+    public boolean isValidEmail(String email) {
+        String regex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
+        return email != null && email.matches(regex);
+    }
+
+
     //el login se hace correctamente cuando las credenciales son correctas de lo contrario
     // no devuelve nada
     public MessageResponse login(String email, String password) {
