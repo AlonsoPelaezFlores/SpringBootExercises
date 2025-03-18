@@ -42,13 +42,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<MessageResponse> loginUser(@RequestBody LoginRequest request) {
-        MessageResponse messageResponse = userService.login(request.email(), request.password());
-        log.info("message login controller: " + messageResponse.getMessage());
-        if (messageResponse == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("❌ Invalid credentials"));
-        }
-        return ResponseEntity.ok(messageResponse);
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequest request) {
+        return userService.login(request.email(), request.password());
     }
 
     @GetMapping("/check-session")

@@ -8,17 +8,19 @@ import com.example.authenticationsystem.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -55,24 +57,26 @@ public class UserService {
         return email != null && email.matches(regex);
     }
 
-
-    //el login se hace correctamente cuando las credenciales son correctas de lo contrario
-    // no devuelve nada
-    public MessageResponse login(String email, String password) {
+    public ResponseEntity<?> login(String email, String password) {
         try{
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password));
-            log.info("Intentando autenticar usuario: " + auth.isAuthenticated());
-            if(auth.isAuthenticated() ) {
-                UserDetails userDetails = (UserDetails) auth.getPrincipal();
-                Optional<User> user = userRepository.findByEmail(userDetails.getUsername());
-                log.info("Usuario encontrado: " + user);
-                httpSession.setAttribute("user_id", user.get().getId());
-                return new MessageResponse("Login successful");
-            }
-            return null;
+
+
+            UserDetails userDetails = (UserDetails) auth.getPrincipal();
+            User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(
+                    ()->new UsernameNotFoundException("The user with this email does not exist"));
+
+            log.info("User found: {}", user);
+            httpSession.setAttribute("user_id", user.getId());
+            log.info("http session: {}", httpSession.getAttribute("user_id").toString());
+
+            return ResponseEntity.status(HttpStatus.OK).body("Login successful");
+
+        }catch (BadCredentialsException e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("❌ Invalid credentials");
         }catch (AuthenticationException e){
-            throw new BadCredentialsException("❌ Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error Authenticating");
         }
     }
 
