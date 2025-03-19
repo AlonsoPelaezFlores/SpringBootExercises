@@ -2,7 +2,6 @@ package com.example.authenticationsystem.service;
 
 import com.example.authenticationsystem.dto.UserDTO;
 import com.example.authenticationsystem.dto.UserResponseDTO;
-import com.example.authenticationsystem.model.MessageResponse;
 import com.example.authenticationsystem.model.User;
 import com.example.authenticationsystem.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
@@ -15,6 +14,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -62,15 +62,21 @@ public class UserService {
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password));
 
+            SecurityContextHolder.getContext().setAuthentication(auth);
 
             UserDetails userDetails = (UserDetails) auth.getPrincipal();
             User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(
                     ()->new UsernameNotFoundException("The user with this email does not exist"));
 
             log.info("User found: {}", user);
-            httpSession.setAttribute("user_id", user.getId());
-            log.info("http session: {}", httpSession.getAttribute("user_id").toString());
 
+            httpSession.setAttribute("user_id", user.getId());
+            httpSession.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
+
+            log.info("http session: {}", httpSession.getAttribute("user_id").toString());
+            log.info("http session id: {}", httpSession.getId());
+            log.info("auth: {}", SecurityContextHolder.getContext().getAuthentication());
             return ResponseEntity.status(HttpStatus.OK).body("Login successful");
 
         }catch (BadCredentialsException e){
@@ -80,22 +86,28 @@ public class UserService {
         }
     }
 
+    public ResponseEntity<?> checkSession(){
+        try {
+            log.info("Session attribute user id : {}", httpSession.getAttribute("user_id"));
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            log.info("authentication: {}", auth);
 
-    //por resolver : pendientes
-    public MessageResponse logout(){
-        httpSession.invalidate();
-        return new MessageResponse("Logged out successfully");
+            long user_id = (long) httpSession.getAttribute("user_id");
+            User userLogged = userRepository.findById(user_id)
+                    .orElseThrow(()->new UsernameNotFoundException("User with this id not found"));
+
+            UserDTO userDto = new UserDTO(userLogged.getUsername());
+            return ResponseEntity.status(HttpStatus.OK).body(new UserResponseDTO(userDto));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error checking session");
+        }
     }
 
-    //por resolver: pendientes
-    public UserResponseDTO checkSession(){
-        long user_id = (long) httpSession.getAttribute("user_id");
-        log.info("Intentando verificar usuario: " + user_id);
-        User userLogged = userRepository.findById(user_id)
-                .orElseThrow(()->new RuntimeException("User not found"));
+    //por resolver : pendientes
+    public ResponseEntity<?> logout(){
+        httpSession.invalidate();
 
-        UserDTO userDto = new UserDTO(userLogged.getUsername());
-        return new UserResponseDTO(userDto);
+        return ResponseEntity.status(HttpStatus.OK).body("Logged out successfully");
     }
 
     public List<User> getUsers(){

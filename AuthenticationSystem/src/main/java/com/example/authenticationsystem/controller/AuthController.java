@@ -2,7 +2,6 @@ package com.example.authenticationsystem.controller;
 
 import com.example.authenticationsystem.dto.LoginRequest;
 import com.example.authenticationsystem.dto.RegisterRequest;
-import com.example.authenticationsystem.dto.UserResponseDTO;
 import com.example.authenticationsystem.model.MessageResponse;
 import com.example.authenticationsystem.model.User;
 import com.example.authenticationsystem.service.UserService;
@@ -46,19 +45,16 @@ public class AuthController {
         return userService.login(request.email(), request.password());
     }
 
+
     @GetMapping("/check-session")
-    public ResponseEntity<UserResponseDTO> checkSession() {
-        UserResponseDTO userLogged = userService.checkSession();
-        if (userLogged == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return ResponseEntity.ok(userLogged);
+    public ResponseEntity<?> checkSession() {
+        return userService.checkSession();
     }
 
+    //por resolver: pendiente
     @PostMapping("/logout")
-    public ResponseEntity<MessageResponse> logout() {
-        MessageResponse messageResponse = userService.logout();
-        return ResponseEntity.ok(messageResponse);
+    public ResponseEntity<?> logout() {
+        return userService.logout();
     }
 
 }
