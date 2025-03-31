@@ -22,14 +22,10 @@ public class SecurityConfig {
                                 "/auth").permitAll()
                         .requestMatchers(
                                 "/auth/check-session",
-                                "auth/logout").authenticated()
+                                "/auth/logout").authenticated()
                         .anyRequest().authenticated()
                 )
-                .logout(logout -> logout
-                        .logoutUrl("/auth/logout")
-                        .logoutSuccessHandler((req, res, auth) -> res.setStatus(200))
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true))
+                .logout(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1));

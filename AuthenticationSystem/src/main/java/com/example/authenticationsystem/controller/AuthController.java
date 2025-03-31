@@ -51,7 +51,6 @@ public class AuthController {
         return userService.checkSession();
     }
 
-    //por resolver: pendiente
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         return userService.logout();

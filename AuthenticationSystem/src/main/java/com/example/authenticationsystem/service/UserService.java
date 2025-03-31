@@ -96,18 +96,25 @@ public class UserService {
             User userLogged = userRepository.findById(user_id)
                     .orElseThrow(()->new UsernameNotFoundException("User with this id not found"));
 
-            UserDTO userDto = new UserDTO(userLogged.getUsername());
+            log.info("userLogged: {}", userLogged);
+            UserDTO userDto = new UserDTO(userLogged.getEmail());
             return ResponseEntity.status(HttpStatus.OK).body(new UserResponseDTO(userDto));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error checking session");
         }
     }
 
-    //por resolver : pendientes
     public ResponseEntity<?> logout(){
-        httpSession.invalidate();
-
-        return ResponseEntity.status(HttpStatus.OK).body("Logged out successfully");
+        try{
+            log. info("user id before delete: {}", httpSession.getAttribute("user_id"));
+            SecurityContextHolder.clearContext();
+            httpSession.removeAttribute("user_id");
+            httpSession.removeAttribute("SPRING_SECURITY_CONTEXT");
+            httpSession.invalidate();
+            return ResponseEntity.status(HttpStatus.OK).body("Logout successful");
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error logging out");
+        }
     }
 
     public List<User> getUsers(){
